@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { EQUIPMENT_DATA, MANUFACTURER_MAP, EQUIPMENT_TYPE_MAP } from './constants';
+import { MANUFACTURER_MAP, EQUIPMENT_TYPE_MAP } from './constants';
 import type { Equipment, EquipmentFilter, ToastType, EquipmentFormData } from './types';
 import Dashboard from './components/Dashboard';
 import EquipmentTable from './components/EquipmentTable';
@@ -9,9 +9,10 @@ import EquipmentDetailModal from './components/EquipmentDetailModal';
 import AddEquipmentModal from './components/AddEquipmentModal';
 import Toast from './components/Toast';
 import { getFiltersFromQuery } from './services/geminiService';
+import { useEquipment } from './hooks/useDatabase';
 
 const App: React.FC = () => {
-    const [equipmentList, setEquipmentList] = useState<Equipment[]>(EQUIPMENT_DATA);
+    const { equipment: equipmentList, loading: dbLoading, error: dbError, addEquipment } = useEquipment();
     const [aiFilters, setAiFilters] = useState<EquipmentFilter>({});
     const [dashboardFilters, setDashboardFilters] = useState<EquipmentFilter>({});
     const [isLoading, setIsLoading] = useState(false);
@@ -91,19 +92,40 @@ const App: React.FC = () => {
       setSelectedEquipment(null);
     }
     
-    const handleAddNewEquipment = (formData: EquipmentFormData) => {
-        const newEquipment: Equipment = {
-            ...formData,
-            equipment_id: Date.now(), // Simple unique ID
-            purchase_price: parseFloat(formData.purchase_price || '0'),
-            current_value: parseFloat(formData.current_value || '0'),
-            year_manufactured: parseInt(formData.year_manufactured || new Date().getFullYear().toString(), 10),
-        };
-        setEquipmentList(prev => [newEquipment, ...prev]);
+    const handleAddNewEquipment = async (formData: EquipmentFormData) => {
+        try {
+            await addEquipment(formData);
+            setToast({ message: "Equipment added successfully!", type: 'success' });
+        } catch (err) {
+            setToast({ message: err instanceof Error ? err.message : "Failed to add equipment", type: 'error' });
+        }
         setIsAddModalOpen(false);
-        setToast({ message: "Equipment added successfully!", type: 'success' });
         setTimeout(() => setToast(null), 3000);
     };
+
+    // Show database loading state
+    if (dbLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto"></div>
+                    <p className="mt-4 text-lg text-gray-600">Loading equipment data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show database error state
+    if (dbError) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-600 text-lg">Database Error: {dbError}</p>
+                    <p className="mt-2 text-gray-600">Please check your database connection and try again.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 text-gray-800">
@@ -120,7 +142,7 @@ const App: React.FC = () => {
                     <EquipmentTable 
                       equipment={filteredEquipment} 
                       onViewDetails={handleViewDetails}
-                      isLoading={isLoading}
+                      isLoading={isLoading || dbLoading}
                     />
                     {error && <p className="text-red-500 mt-2">{error}</p>}
                 </div>
