@@ -1,9 +1,8 @@
-import { pool } from '../lib/database';
-import type { Equipment, EquipmentFormData } from '../types';
+import { pool } from './database.js';
 
 export class DatabaseService {
   // Get all equipment
-  static async getAllEquipment(): Promise<Equipment[]> {
+  static async getAllEquipment() {
     try {
       const client = await pool.connect();
       try {
@@ -39,7 +38,7 @@ export class DatabaseService {
   }
 
   // Add new equipment
-  static async addEquipment(equipmentData: EquipmentFormData): Promise<Equipment> {
+  static async addEquipment(equipmentData) {
     try {
       const client = await pool.connect();
       try {
@@ -81,7 +80,7 @@ export class DatabaseService {
   }
 
   // Update equipment
-  static async updateEquipment(id: number, updates: Partial<Equipment>): Promise<Equipment> {
+  static async updateEquipment(id, updates) {
     try {
       const client = await pool.connect();
       try {
@@ -109,7 +108,7 @@ export class DatabaseService {
   }
 
   // Delete equipment
-  static async deleteEquipment(id: number): Promise<void> {
+  static async deleteEquipment(id) {
     try {
       const client = await pool.connect();
       try {

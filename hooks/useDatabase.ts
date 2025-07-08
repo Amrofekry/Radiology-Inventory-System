@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DatabaseService } from '../services/databaseService';
+import { ApiService } from '../services/apiService';
 import type { Equipment, EquipmentFormData } from '../types';
 
 export const useEquipment = () => {
@@ -10,7 +10,7 @@ export const useEquipment = () => {
   const fetchEquipment = async () => {
     try {
       setLoading(true);
-      const data = await DatabaseService.getAllEquipment();
+      const data = await ApiService.getAllEquipment();
       setEquipment(data);
       setError(null);
     } catch (err) {
@@ -22,7 +22,7 @@ export const useEquipment = () => {
 
   const addEquipment = async (equipmentData: EquipmentFormData) => {
     try {
-      const newEquipment = await DatabaseService.addEquipment(equipmentData);
+      const newEquipment = await ApiService.addEquipment(equipmentData);
       setEquipment(prev => [newEquipment, ...prev]);
       return newEquipment;
     } catch (err) {
@@ -32,7 +32,7 @@ export const useEquipment = () => {
 
   const updateEquipment = async (id: number, updates: Partial<Equipment>) => {
     try {
-      const updatedEquipment = await DatabaseService.updateEquipment(id, updates);
+      const updatedEquipment = await ApiService.updateEquipment(id, updates);
       setEquipment(prev => prev.map(item => 
         item.equipment_id === id ? updatedEquipment : item
       ));
@@ -44,7 +44,7 @@ export const useEquipment = () => {
 
   const deleteEquipment = async (id: number) => {
     try {
-      await DatabaseService.deleteEquipment(id);
+      await ApiService.deleteEquipment(id);
       setEquipment(prev => prev.filter(item => item.equipment_id !== id));
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to delete equipment');
