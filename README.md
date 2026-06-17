@@ -350,7 +350,7 @@ Found 12 active MRI scanners across 4 departments.
 
 ### 🎥 Demo Video
 
-> Insert your application demo video link here.
+[Watch Demo Video](./demo/Recording-2026-06-17-152631.mp4)
 
 ---
 
